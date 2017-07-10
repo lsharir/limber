@@ -22,9 +22,14 @@
     "scripts": ["src/bg/eventPage.js"],
     "persistent": false
   },
+  "options_ui": {
+    "page": "src/popup/popup.html",
+    "chrome_style": true
+  },
   "permissions": [
     "alarms",
     "notifications",
-    "storage"
+    "storage",
+    "idle"
   ]
 }

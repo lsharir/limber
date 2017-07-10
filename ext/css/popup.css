@@ -1,4 +1,9 @@
 body {
+  display: inline;
+}
+
+#options {
+  margin: auto;
   width: 20rem;
 }
 

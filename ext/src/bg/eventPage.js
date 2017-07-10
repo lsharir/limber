@@ -1,13 +1,3 @@
-function createNotification(title, name, message) {
-  chrome.notifications.create(name + '_' + Date.now(), {
-    type: 'basic',
-    title: title,
-    iconUrl: chrome.runtime.getURL('icons/icon128.png'),
-    message: message,
-    priority: 2
-  });
-}
-
 var LIMBER_PHRASES = [
   'Take a break!',
   'Watch your spine!',
@@ -21,6 +11,18 @@ var LIMBER_PHRASES = [
   'A jug fills drop by drop.',
   'All you need is stretch.'
 ];
+
+var LIMBER_IDLE = 5 * 60; // 5 minutes in seconds
+
+function createNotification(title, name, message) {
+  chrome.notifications.create(name + '_' + Date.now(), {
+    type: 'basic',
+    title: title,
+    iconUrl: chrome.runtime.getURL('icons/icon128.png'),
+    message: message,
+    priority: 2
+  });
+}
 
 function getRandomLimberPhrase() {
   return LIMBER_PHRASES[Math.floor(LIMBER_PHRASES.length * Math.random())];
@@ -53,6 +55,20 @@ function getAlarms() {
       resolve(alarmsState);
     })
   });
+}
+
+function handleAlarmAction(alarm) {
+  switch (alarm.name) {
+    case 'POSTURE_REMINDER':
+      postureAudio();
+      break;
+
+    case 'LIMBER_REMINDER':
+      limberNotification();
+      break;
+    default:
+      console.error('Unknown alarm', alarm);
+  }
 }
 
 chrome.runtime.onMessage.addListener(function (state) {
@@ -102,19 +118,13 @@ chrome.runtime.onMessage.addListener(function (state) {
 });
 
 chrome.alarms.onAlarm.addListener(function (alarm) {
-  switch (alarm.name) {
-    case 'POSTURE_REMINDER':
-      postureAudio();
-      break;
+  chrome.idle.queryState(LIMBER_IDLE, function(idleState) {
+    if (idleState === "active") {
+      handleAlarmAction(alarm);
+    }
 
-    case 'LIMBER_REMINDER':
-      limberNotification();
-      break;
-    default:
-      console.error('Unknown alarm', alarm);
-  }
-
-  getAlarms().then(function (alarms) {
-    chrome.runtime.sendMessage(alarms);
-  })
+    getAlarms().then(function (alarms) {
+      chrome.runtime.sendMessage(alarms);
+    })
+  });
 });

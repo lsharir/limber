@@ -165,7 +165,13 @@ function reducer(action) {
       break;
     
     case 'SET_ALARMS':
-      limber.alarms = Object.assign({}, action.alarms);
+      limber = Object.assign({}, limber, {
+        state: {
+          postureReminder: !!action.alarms.POSTURE_REMINDER,
+          limberReminder: !!action.alarms.LIMBER_REMINDER
+        },
+        alarms: action.alarms
+      });
       break;
 
     default:
