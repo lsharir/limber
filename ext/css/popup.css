@@ -1,0 +1,54 @@
+body {
+  width: 20rem;
+}
+
+#title {
+  text-align: center;
+  margin: 1rem;
+}
+
+#main-title {
+  font-size: 2rem;
+}
+
+#sub-title {
+  font-size: 0.75rem;
+}
+
+#container {
+  margin: 1rem;
+}
+
+.input-container {
+  font-size: 1rem;
+  margin: 2rem 1rem;
+  position: relative;
+}
+
+.input-metadata {
+  position: absolute;
+  margin-left: 1.5rem;
+  top: 100%;
+  font-size: 0.5rem;
+}
+
+.timestamp {
+  color: #2196F3;
+}
+
+#spine-health-container {
+  margin: 4rem 1rem 1rem 1rem;
+  text-align: center;
+}
+
+.spine-health-0 {
+  color: #F44336;
+}
+
+.spine-health-1 {
+  color: #99A62B;
+}
+
+.spine-health-2 {
+  color: #2196F3;
+}
