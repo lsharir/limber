@@ -38,22 +38,28 @@ window.onload = function () {
     reducer({ type: 'LOAD_STATE', state : storage.state })
   });
 
-  setInterval(updateLiveVariables, 1000);
+  setInterval(LimberUIComputedPropertiesRefresh, 1000);
 }
 
 chrome.runtime.onMessage.addListener(function (alarms) {
   reducer({ type : 'SET_ALARMS', alarms: alarms });
 })
 
-function propagateDataToDOM() {
+/** One time actions required only once at load time! */
+function LimberUIInit() {
+  /** Checkboxes values deductions from the loaded state */
+  limber.elements.limberCheckbox.checked = limber.state.limberReminder;
+  limber.elements.postureCheckbox.checked = limber.state.postureReminder;
+}
+
+/** Repaint actions required upon data modification */
+function LimberUIRefresh() {
   var health = 0;
 
   limber.elements.limberStatus.innerHTML = limber.state.limberReminder ? 'notification every 30 minutes. upcoming:' : 'reminder disabled';
   limber.elements.postureStatus.innerHTML = limber.state.postureReminder ? 'short tune every 10 minutes. upcoming:' : 'reminder disabled';
 
-  limber.elements.limberCheckbox.checked = limber.state.limberReminder;
-  limber.elements.postureCheckbox.checked = limber.state.postureReminder;
-
+  /** Modifies the 'checked' class to the containers classList if loaded states changed */
   limber.elements.limberContainer.classList.toggle('checked', limber.state.limberReminder);
   limber.elements.postureContainer.classList.toggle('checked', limber.state.postureReminder);
 
@@ -73,10 +79,10 @@ function propagateDataToDOM() {
     limber.elements.postureReminder.classList.add(CLASSES.HIDDEN);
   }
 
-  updateLiveVariables({ health: health });
+  LimberUIComputedPropertiesRefresh({ health: health });
 }
 
-function updateLiveVariables(variables) {
+function LimberUIComputedPropertiesRefresh(variables) {
   variables = variables || {};
 
   if (limber.alarms.LIMBER_REMINDER) {
@@ -134,11 +140,11 @@ function connectElementsBehavior() {
 }
 
 function togglePostureReminder() {
-  reducer({ type : 'TOGGLE_POSTURE' });
+  reducer({ type : 'TOGGLE_POSTURE', payload: limber.elements.postureCheckbox.checked });
 }
 
 function toggleLimberReminder() {
-  reducer({ type: 'TOGGLE_LIMBER' });
+  reducer({ type: 'TOGGLE_LIMBER', payload: limber.elements.limberCheckbox.checked });
 }
 
 function reducer(action) {
@@ -147,20 +153,21 @@ function reducer(action) {
   switch (action.type) {
     case 'LOAD_STATE':
       updateEventPage = true;
-      limber.state = Object.assign({}, limber, action.state)
+      limber.state = Object.assign({}, limber, action.state);
+      LimberUIInit();
       break;
 
     case 'TOGGLE_POSTURE':
       updateEventPage = true;
       limber.state = Object.assign({}, limber.state, {
-        postureReminder: !limber.state.postureReminder
+        postureReminder: action.payload
       });
       break;
 
     case 'TOGGLE_LIMBER':
       updateEventPage = true;
       limber.state = Object.assign({}, limber.state, {
-        limberReminder: !limber.state.limberReminder
+        limberReminder: action.payload
       });
       break;
     
@@ -178,7 +185,7 @@ function reducer(action) {
       console.warning('no action selected!')
   }
 
-  propagateDataToDOM();
+  LimberUIRefresh();
 
   if (updateEventPage) {
     chrome.runtime.sendMessage(limber.state);
